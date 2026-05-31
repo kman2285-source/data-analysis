@@ -1,5 +1,62 @@
-# 기존 questions 리스트에 아래의 딕셔너리들을 추가(복사/붙여넣기) 하시면 됩니다.
+import streamlit as st
 
+# 페이지 기본 설정
+st.set_page_config(page_title="대학원 기말시험 문제은행", page_icon="📝", layout="centered")
+
+st.title("📊 기말시험 문제은행 시스템")
+st.markdown("""
+업로드된 강의 교재(**6장 회귀분석, 7장 고급회귀분석, 8장 데이터 마이닝**)의 핵심 수식과 사례를 반영한 모의고사입니다.
+*GitHub 코드를 수정하여 새로운 문제를 추가하면 웹에서 자동으로 업데이트됩니다.*
+""")
+st.divider()
+
+# 문제 데이터베이스 (총 15문제)
+questions = [
+    {
+        "id": 1,
+        "chapter": "6장 선형회귀모형 (더미변수 계산)",
+        "question": "소매매출액(y)과 국민총생산(GNP) 간의 관계를 분석한 모형에서, 추정된 회귀식이 `y = 47095.69 + 65.05 * GNP - 108765.26 * d1 - 30486.29 * d2 - 48805.05 * d3` 입니다. 여기서 d1, d2, d3는 각각 1분기, 2분기, 3분기 더미변수입니다. GNP가 18,000(십억 단위)일 때, 2분기 소매매출액의 예측값은 얼마입니까? (교재 산출 기준)",
+        "options": ["1,187,509", "1,187,595", "1,218,081", "1,078,830"],
+        "answer": "1,187,595",
+        "explanation": "2분기이므로 더미변수는 d1=0, d2=1, d3=0이 됩니다. 교재의 정밀한 계수(GNP: 65.0548, d2: 30486.2947)를 적용하면 예측값은 `y = 47095.6859 + (65.0548 * 18000) - 30486.2947 ≈ 1,187,595`가 됩니다."
+    },
+    {
+        "id": 2,
+        "chapter": "7장 고급회귀분석 (상호작용 변수)",
+        "question": "수축기 혈압(Systolic)에 대한 상호작용 회귀모형이 `Systolic = 70.83 + 0.4362 * Weight + 30.2482 * Black - 0.1118 * (Weight × Black)` 으로 추정되었습니다. Weight는 체중(파운드), Black은 흑인 여부(흑인=1, 그 외=0)를 나타내는 더미변수입니다. 체중이 180파운드인 흑인 남성의 예측 수축기 혈압은 약 얼마입니까? (정수로 반올림)",
+        "options": ["149", "150", "157", "159"],
+        "answer": "159",
+        "explanation": "Weight=180, Black=1 이므로 상호작용항 `Weight × Black = 180`이 됩니다. 식에 대입하면 `Systolic = 70.8312 + (0.4362 * 180) + 30.2482 - (0.1118 * 180) = 158.6914`가 되며, 반올림하면 159가 됩니다."
+    },
+    {
+        "id": 3,
+        "chapter": "7장 선형확률모형과 로지스틱 회귀모형",
+        "question": "로지스틱 회귀모형을 사용하여 대출승인확률을 계산하고자 합니다. 모기지 대출 승인 확률 𝑝에 대해 `p = exp(Z) / (1 + exp(Z))` 이고, `Z = -9.3671 + 0.1349 * x1 + 0.1782 * x2` 로 추정되었습니다. (x1: 착수금비율, x2: 소득대출비율). 착수금비율이 20%이고 소득대출비율이 30%일 때의 대출승인확률 𝑝는 약 얼마입니까?",
+        "options": ["0.2103", "0.2818", "0.5065", "0.9384"],
+        "answer": "0.2103",
+        "explanation": "Z 값을 먼저 계산하면 `Z = -9.3671 + (0.1349 * 20) + (0.1782 * 30) = -1.3211` 입니다. 이를 확률 공식 `p = exp(-1.3211) / (1 + exp(-1.3211))` 에 대입하면 약 0.2103 (21.03%)이 도출됩니다."
+    },
+    {
+        "id": 4,
+        "chapter": "8장 성능 평가 (혼동행렬)",
+        "question": "분류 모형의 성능 평가에서, 혼동행렬(Confusion Matrix)의 결과가 다음과 같습니다. [참 양성(TP)=29, 참 음성(TN)=133, 거짓 양성(FP)=19, 거짓 음성(FN)=19]. 이 예측 모형의 민감도(Sensitivity)와 정밀도(Precision)로 알맞게 짝지어진 것은?",
+        "options": [
+            "민감도: 0.604, 정밀도: 0.604", 
+            "민감도: 0.810, 정밀도: 0.875", 
+            "민감도: 0.604, 정밀도: 0.875", 
+            "민감도: 0.875, 정밀도: 0.604"
+        ],
+        "answer": "민감도: 0.604, 정밀도: 0.604",
+        "explanation": "민감도(재현율) = `TP / (TP + FN) = 29 / (29 + 19) = 0.604` 입니다. 정밀도(양성예측도) = `TP / (TP + FP) = 29 / (29 + 19) = 0.604` 입니다. 따라서 두 지표가 동일하게 산출됩니다."
+    },
+    {
+        "id": 5,
+        "chapter": "8장 유사도 척도 (거리 계산)",
+        "question": "두 관측치의 2차원 수치형 데이터가 관측치 A=(3, 4), 관측치 B=(10, 1)로 주어졌습니다. 이 두 관측치 간의 맨해튼 거리(Manhattan distance)는 얼마입니까?",
+        "options": ["7.21", "7.62", "10.00", "50.00"],
+        "answer": "10.00",
+        "explanation": "맨해튼 거리는 각 차원의 수평, 수직 이동 거리의 절대값 합으로 구합니다. `|3 - 10| + |4 - 1| = |-7| + |3| = 7 + 3 = 10` 입니다. (참고로 두 점 사이의 유클리드 거리는 약 7.62입니다.)"
+    },
     {
         "id": 6,
         "chapter": "6장 다중공선성과 분산팽창계수(VIF)",
@@ -80,3 +137,48 @@
         "answer": "0.5% 증가",
         "explanation": "로그-로그(Log-Log) 모형에서 독립변수의 기울기 계수는 탄력성(Elasticity)을 의미합니다. 즉, X가 1% 변할 때 Y가 몇 % 변하는지를 직접적으로 나타내므로 정답은 0.5% 증가입니다."
     }
+]
+
+# 화면 새로고침 시에도 문제 번호와 정답 확인 상태가 유지되도록 세션 상태 관리
+if 'q_idx' not in st.session_state:
+    st.session_state.q_idx = 0
+if 'show_ans' not in st.session_state:
+    st.session_state.show_ans = False
+
+# 현재 문제 데이터 불러오기
+q = questions[st.session_state.q_idx]
+
+st.subheader(f"📝 문제 {st.session_state.q_idx + 1}. [{q['chapter']}]")
+st.write(q['question'])
+
+# 라디오 버튼으로 보기 출력
+user_choice = st.radio("정답을 선택하세요:", q['options'], key=f"radio_{st.session_state.q_idx}")
+
+# 버튼 배치 레이아웃
+col1, col2 = st.columns([1, 4])
+with col1:
+    if st.button("정답 확인 💡"):
+        st.session_state.show_ans = True
+
+with col2:
+    if st.session_state.q_idx < len(questions) - 1:
+        if st.button("다음 문제 ➡️"):
+            st.session_state.q_idx += 1
+            st.session_state.show_ans = False
+            st.rerun()
+    else:
+        if st.button("처음으로 🔄"):
+            st.session_state.q_idx = 0
+            st.session_state.show_ans = False
+            st.rerun()
+
+# 정답 및 해설 출력 로직
+if st.session_state.show_ans:
+    st.markdown("---")
+    if user_choice == q['answer']:
+        st.success(f"✅ 정답입니다! ({q['answer']})")
+    else:
+        st.error(f"❌ 오답입니다. (정답: {q['answer']})")
+    
+    st.markdown("#### 📖 해설")
+    st.info(q['explanation'])
